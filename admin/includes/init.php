@@ -13,5 +13,4 @@ require_once("Comment.php");
 require_once("Session.php");
 require_once("Tags.php");
 require_once("Category.php");
-require_once ("FacebookAuth.php");
 ?>

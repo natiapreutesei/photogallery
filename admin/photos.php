@@ -45,7 +45,10 @@ $photosoftdeletes = Photo::find_all_soft_deletes();
 						<div class="tab-content" id="myTabContent">
 							<div class="tab-pane fade show active" id="photos-tab-pane" role="tabpanel"
 							     aria-labelledby="photos-tab" tabindex="0">
-								<form action="edit_multiple_photos.php" method="post">
+								<form id="photosForm" action="edit_multiple_photos.php" method="post">
+									<input type="hidden" name="action" id="formAction" value="edit">
+									<input type="hidden" name="edit_selected" id="editAction" value="">
+
 									<div class="mt-5 d-flex flex-wrap">
                                         <?php foreach ($photos as $photo): ?>
 											<div class="m-1 position-relative">
@@ -65,7 +68,8 @@ $photosoftdeletes = Photo::find_all_soft_deletes();
                                         <?php endforeach; ?>
 									</div>
 									<div class="d-flex mt-5">
-											<button type="submit" name="edit_selected" class="btn btn-primary">Edit Selected</button>
+										<button type="button" id="editSelectedButton" class="btn btn-primary me-3">Edit Selected</button>
+										<button type="button" id="deleteSelectedButton" class="btn btn-danger">Delete Selected</button>
 									</div>
 								</form>
 							</div>
@@ -102,3 +106,25 @@ $photosoftdeletes = Photo::find_all_soft_deletes();
 <?php
 include("includes/footer.php");
 ?>
+
+		<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('editSelectedButton').addEventListener('click', function() {
+                    // Set the hidden input value to indicate the edit action
+                    document.getElementById('editAction').value = 'true';
+                    document.getElementById('photosForm').action = 'edit_multiple_photos.php';
+                    document.getElementById('photosForm').submit(); // Navigate to edit_multiple_photos.php
+                });
+
+                document.getElementById('deleteSelectedButton').addEventListener('click', function() {
+                    // No need to set editAction value for deletion
+                    document.getElementById('formAction').value = 'delete';
+                    document.getElementById('photosForm').action = 'bulk_delete_photos.php';
+                    document.getElementById('photosForm').submit(); // Proceed with deletion
+                });
+            });
+		</script>
+
+
+
+

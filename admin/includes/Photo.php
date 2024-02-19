@@ -470,20 +470,19 @@ class Photo extends Db_object {
     // This method returns the path to a photo file.
     // It's essential for retrieving and displaying photos stored in the application's filesystem or displaying a placeholder if the photo file does not exist.
     public function picture_path() {
-        // Check if a filename has been set for the photo and that it is not an empty string.
-        // The check ensures that there is a valid filename to construct the path.
-        if ($this->filename && $this->upload_directory.DS.$this->filename != "") {
-            // Construct the path to the photo using the upload directory and the filename.
-            // DS is a directory separator constant (e.g., '/' on Linux/Unix or '\' on Windows),
-            // ensuring the path is correctly formed regardless of the operating system.
-            return $this->upload_directory.DS.$this->filename;
+        // Check if the filename is a URL by looking for the 'http://' or 'https://' prefix.
+        if (strpos($this->filename, 'http://') === 0 || strpos($this->filename, 'https://') === 0) {
+            // If the filename is a URL, return it as is without adding any directory path.
+            return $this->filename;
+        } else if ($this->filename && !empty($this->filename)) {
+            // If the filename is not a URL and is not empty, construct the path using the upload directory.
+            return $this->upload_directory . DS . $this->filename;
         } else {
-            // If the photo does not have a valid filename, return a URL to a placeholder image.
-            // This is useful for maintaining user interface consistency by providing a default image
-            // when the actual photo is missing or not specified.
+            // If there's no filename or it's empty, return a URL to a placeholder image.
             return 'https://via.placeholder.com/300';
         }
     }
+
 
     public static function undo_soft_delete($photo_id) {
         global $database;
@@ -539,7 +538,7 @@ class Photo extends Db_object {
                 imagejpeg($destImg, $target_path, 85); // 85 is a good quality-value for JPEG
                 break;
             case IMAGETYPE_PNG:
-                imagepng($destImg, $target_path, 6); // Compression level: from 0 (no compression) to 9
+                imagepng($destImg, $target_path, 9); // Compression level: from 0 (no compression) to 9
                 break;
             case IMAGETYPE_GIF:
                 imagegif($destImg, $target_path);
@@ -553,12 +552,14 @@ class Photo extends Db_object {
         return true;
     }
 
-    /*public function update_photo(){
-        if(!empty($this->filename)){
-            $target_path = SITE_ROOT.DS.'admin'.DS.$this->picture_path();
-            return unlink($target_path) ? true : false;
-        }
-    }*/
+    public static function count_all() {
+        global $database;
+        $sql = "SELECT COUNT(*) FROM " . self::$table_name . " WHERE deleted_at IS NULL OR deleted_at = '0000-00-00 00:00:00'";
+        $result_set = $database->query($sql);
+        $row = $result_set->fetch_array();
+        return array_shift($row);
+    }
+
 }
 
 ?>

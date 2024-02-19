@@ -2,7 +2,7 @@
 include("includes/header.php");
 include("includes/sidebar.php");
 
-if (isset($_POST['edit_selected'])) {
+if (!empty($_POST['edit_selected'])) {
     $selected_photos = $_POST['selected_photos'] ?? [];
     $photos_to_edit = [];
     foreach ($selected_photos as $photo_id) {
@@ -19,6 +19,7 @@ if (isset($_POST['edit_selected'])) {
     header("Location: photos.php");
     exit;
 }
+
 ?>
 
 <div id="main">

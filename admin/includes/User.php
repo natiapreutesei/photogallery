@@ -6,7 +6,9 @@ class User extends Db_Object{
     public $password;
     public $first_name;
     public $last_name;
+
     public $deleted_at;
+    public $email;
     public $user_image;
     public $upload_directory='assets/images/photos/users';
     public $image_placeholder='https://via.placeholder.com/62';
@@ -42,6 +44,7 @@ class User extends Db_Object{
             'last_name'=> $this->last_name,
             'user_image' =>$this->user_image,
             'deleted_at'=> $this->deleted_at,
+            'email' => $this->email
         ];
     }
 
@@ -54,23 +57,21 @@ class User extends Db_Object{
         return $result;
     }
 
-    /*verify user*/
-//    public static function verify_user($username, $password){
-//        global $database;
-//        $username = $database->escape_string($username);
-//        $password= $database->escape_string($password);
-//
-//        //SELECT * FROM users WHERE username = ? and password = ? LIMIT 1
-//
-//        $sql = "SELECT * FROM " . self::$table_name . " WHERE ";
-//        $sql .= "username = ? ";
-//        $sql .= "AND password = ? ";
-//        $sql .= "LIMIT 1";
-//
-//
-//        $the_result_array = self::find_this_query($sql,[$username,$password]);
-//        return !empty($the_result_array) ? array_shift($the_result_array) : false;
-//    }
+    public static function find_by_id($id) {
+        global $database;
+        $escaped_id = $database->escape_string($id);
+        $result_array = static::find_this_query("SELECT * FROM users WHERE id = ? LIMIT 1", [$escaped_id]);
+        return !empty($result_array) ? array_shift($result_array) : false;
+    }
+
+    // Method to find a user by email
+    public static function find_by_email($email) {
+        global $database;
+        $email = $database->escape_string($email);
+        $result_array = static::find_this_query("SELECT * FROM users WHERE email = '{$email}' LIMIT 1");
+        return !empty($result_array) ? array_shift($result_array) : false;
+    }
+
     public static function verify_user($username, $password){
         global $database;
         $username = $database->escape_string($username);
@@ -160,6 +161,14 @@ class User extends Db_Object{
                 return false;
             }
         }
+    }
+
+    public static function count_all() {
+        global $database;
+        $sql = "SELECT COUNT(*) FROM " . self::$table_name;
+        $result_set = $database->query($sql);
+        $row = $result_set->fetch_array();
+        return array_shift($row);
     }
 }
 ?>

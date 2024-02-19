@@ -1,4 +1,5 @@
 <?php
+global $session;
 include("includes/header.php");
 if(!$session->is_signed_in()){
     header("location:login.php");

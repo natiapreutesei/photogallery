@@ -44,56 +44,35 @@ class Db_object{
     }
 
     /*CRUD*/
-    public function create(){
+    public function create() {
         global $database;
 
-        // Tabelnaam ophalen uit de statische eigenschap van de klasse
         $table = static::$table_name;
-
-        // Eigenschappen van de klasse ophalen als een array
         $properties = $this->get_properties();
 
-        // Verwijder de 'id' eigenschap uit de array indien aanwezig
-        // omdat de 'id' meestal automatisch door de database wordt gegenereerd
-        if(array_key_exists('id', $properties)){
-            unset($properties['id']);
+        // Set default value for 'deleted_at' if not already set
+        if (!isset($properties['deleted_at'])) {
+            $properties['deleted_at'] = '0000-00-00 00:00:00';
         }
 
-        // De waarden van de eigenschappen beschermen tegen SQL-injectie
-        // door elk element door de 'escape_string' functie van het databaseobject te halen
-        $escaped_values = array_map([$database, 'escape_string'], $properties);
+        unset($properties['id']); // Auto-generated, so we remove it
 
-        // Placeholder voor elke waarde in de query genereren (bijv. '?')
-        // Dit wordt gebruikt in een prepared statement
+        $escaped_values = array_map([$database, 'escape_string'], array_values($properties));
         $placeholders = array_fill(0, count($properties), '?');
-
-        // Een string van veldnamen maken, gescheiden door komma's
-        // Dit representeert de kolomnamen in de database
         $fields_string = implode(',', array_keys($properties));
 
-        // Een string van typen maken die het datatypen van elke waarde vertegenwoordigen
-        // 'i' voor integers, 'd' voor doubles, en 's' voor strings
-        $types_string = "";
-        foreach ($properties as $value){
-            if(is_int($value)){
-                $types_string .= "i";
-            } elseif (is_float($value)){
-                $types_string .= "d";
-            } else {
-                $types_string .= "s";
-            }
-        }
+        // Adjust the SQL statement to include 'deleted_at' handling
+        $sql = sprintf("INSERT INTO %s (%s) VALUES (%s)", $table, $fields_string, implode(',', $placeholders));
 
-        // Een prepared statement maken voor het invoegen van gegevens
-        // Dit verhoogt de veiligheid door SQL-injectie te voorkomen
-        $sql = "INSERT INTO $table ($fields_string) VALUES (" . implode(',', $placeholders) . ")";
-        if($database->query($sql, $escaped_values)) {
-            $this->id = $database->the_insert_id(); // Ensure this line correctly fetches the new ID
-            return true; // Explicitly return true upon success
+        // Execute the query with prepared statement
+        if ($database->query($sql, $escaped_values)) {
+            $this->id = $database->the_insert_id();
+            return true;
         } else {
-            return false; // Ensure there's a condition that correctly returns false
+            return false;
         }
     }
+
     public function update(){
         global $database;
         // Tabelnaam ophalen uit de statische eigenschap van de klasse

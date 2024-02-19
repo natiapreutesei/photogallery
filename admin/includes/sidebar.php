@@ -47,7 +47,7 @@
 
                     <li
                         class="sidebar-item active ">
-                        <a href="index.html" class='sidebar-link'>
+                        <a href="index.php" class='sidebar-link'>
                             <i class="bi bi-grid-fill"></i>
                             <span>CMS</span>
                         </a>
@@ -142,7 +142,7 @@
 
 
                     </li>
-                    <li
+                    <!--<li
                         class="sidebar-item  has-sub">
                         <a href="#" class='sidebar-link'>
                             <i class="bi bi-stack"></i>
@@ -322,9 +322,9 @@
                         </ul>
 
 
-                    </li>
+                    </li>-->
 
-                    <li class="sidebar-title">Forms &amp; Tables</li>
+                    <!--<li class="sidebar-title">Forms &amp; Tables</li>
 
                     <li
                         class="sidebar-item  has-sub">
@@ -465,9 +465,9 @@
                         </ul>
 
 
-                    </li>
+                    </li>-->
 
-                    <li class="sidebar-title">Extra UI</li>
+                    <!--<li class="sidebar-title">Extra UI</li>
 
                     <li
                         class="sidebar-item  has-sub">
@@ -631,9 +631,9 @@
                         </ul>
 
 
-                    </li>
+                    </li>-->
 
-                    <li class="sidebar-title">Pages</li>
+                    <!--<li class="sidebar-title">Pages</li>
 
                     <li
                         class="sidebar-item  ">
@@ -731,9 +731,9 @@
                         </ul>
 
 
-                    </li>
+                    </li>-->
 
-                    <li class="sidebar-title">Raise Support</li>
+                   <!-- <li class="sidebar-title">Raise Support</li>
 
                     <li
                         class="sidebar-item  ">
@@ -763,7 +763,7 @@
                         </a>
 
 
-                    </li>
+                    </li>-->
 
                 </ul>
             </div>
