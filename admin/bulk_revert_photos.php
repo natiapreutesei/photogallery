@@ -1,6 +1,6 @@
 <?php
+require_once("includes/init.php");
 global $session;
-
 /**
  * This script is designed to handle the bulk action of reverting the soft deletion of selected photos.
  * It is typically accessed through a form submission from an administrative interface where multiple
