@@ -204,7 +204,7 @@ include("includes/footer.php");
         const formBody = document.getElementById('uploadForm').querySelector('.form-body');
         const buttonsContainer = document.querySelector('.buttons-container');
 
-        // Insert the new set of input fields (container) into the form, just above the buttons container.
+        // Insert the new set of input fields (container) into the form, just above the buttons' container.
         // This places the new inputs in the correct location within the form layout.
         formBody.insertBefore(container, buttonsContainer);
 
