@@ -249,8 +249,43 @@ class Category extends Db_object {
     }
 
 
-    // This static method ensures a category with the given name exists in the database.
-    // If the category does not exist, it creates a new one. It then returns the ID of the existing or new category.
+    /**
+     * Ensures the existence of a category in the database by its name.
+     *
+     * This method checks if a category with a specified name already exists in the database.
+     * If it does, the method returns the ID of the existing category. If the category does not exist,
+     * a new one is created with the given name, and its ID is returned. This ensures that categories
+     * are uniquely identified by their names and that no duplicates are created.
+     *
+     * How It Works:
+     * 1. It attempts to find an existing category by the given name using the `find_by_category_name` method.
+     *    a. If an existing category is found, the method immediately returns the ID of this category.
+     * 2. If no category with the given name exists, the method proceeds to create a new category.
+     *    a. A new Category object is instantiated, and its `category_name` property is set to the provided name.
+     *    b. The `save` method of the Category object is called to attempt to insert the new category into the database.
+     *       i. If the save operation is successful, the method returns the ID of the newly created category.
+     *       ii. If the save operation fails, the method returns null, indicating that the new category could not be created.
+     *
+     * Usage Scenario:
+     * This method is particularly useful when associating content (such as photos or posts) with categories.
+     * It allows for the automatic creation of categories as needed, ensuring that content is always associated
+     * with a valid category without requiring pre-existing knowledge of category IDs.
+     *
+     * Example Usage:
+     * ```php
+     * $categoryID = Category::ensure_category("Landscape");
+     * if ($categoryID) {
+     *     echo "Category ID: " . $categoryID;
+     * } else {
+     *     echo "Failed to ensure the category exists.";
+     * }
+     * ```
+     * In this example, the method is used to ensure that a category named "Landscape" exists in the database.
+     * It either returns the ID of an existing "Landscape" category or creates a new one and returns its ID.
+     *
+     * Note: This method assumes that the `find_by_category_name` and `save` methods are implemented in the Category class
+     * and that the global `$database` object is available for executing SQL queries and obtaining the ID of newly inserted records.
+     */
     public static function ensure_category($category_name) {
         global $database; // Access the global database instance to perform SQL operations.
 
@@ -275,5 +310,6 @@ class Category extends Db_object {
             return $existing_category->id;
         }
     }
+
 
 }
