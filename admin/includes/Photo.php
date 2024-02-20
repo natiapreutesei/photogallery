@@ -298,6 +298,7 @@ class Photo extends Db_object {
 
 
     /*METHODS DEALING WITH TAGS*/
+    /*SPECIFIC FOR WHEN ADDING A NEW IMAGE WITH TAGS*/
     /**
      * Handles the association and management of tags linked to a specific photo. It ensures
      * that all tags assigned to a photo are saved in the database and properly linked to the
@@ -524,14 +525,83 @@ class Photo extends Db_object {
         return $photo_list; // Return list of Photo objects associated with the tag.
     }
 
+    /*TAGS - SPECIFIC FOR THE UPDATE OF A TAG WHEN EDITING EXISTING PHOTO*/
 
-    // Public wrapper method for linking a tag
+    /**
+     * A public method designed to facilitate the association of a tag with a photo. This method acts as a wrapper
+     * around the `link_tag` method, streamlining the process of linking a tag to a photo from external code.
+     *
+     * Explanation:
+     * - This method simplifies the interface for adding a tag to a photo, making the code more readable and maintainable.
+     * - It directly utilizes the `link_tag` method, which contains the logic for creating a relationship in the database
+     *   between a photo and a tag.
+     * - By abstracting the direct call to `link_tag`, this method allows for future enhancements or changes in the
+     *   linking process without affecting the external code that adds tags to photos.
+     *
+     * Process:
+     * 1. Receives a tag ID as its parameter. This ID should correspond to an existing tag in the database.
+     * 2. Calls the `link_tag` method with the provided tag ID, which performs the actual operation of linking the tag
+     *    with the photo in the database.
+     *
+     * Importance:
+     * - Enhances code readability and usability by providing a clear and straightforward way to add tags to photos.
+     * - Facilitates code maintenance and scalability by encapsulating the tagging logic within the `link_tag` method.
+     *
+     * Usage:
+     * Assuming you have an instance of a Photo object and a valid tag ID:
+     * ```php
+     * $photo = new Photo(); // Assume this is an initialized and saved Photo object.
+     * $tagId = 1; // Example tag ID that you want to link to the photo.
+     * $photo->addTag($tagId); // This will link the tag with ID 1 to the photo.
+     * ```
+     *
+     * Note:
+     * - The tag ID provided must correspond to an existing tag in the database. The method assumes that the tag ID is valid
+     *   and does not perform any validation itself.
+     * - This method is particularly useful in contexts where photos are being tagged with predefined tags, such as in
+     *   a photo management or categorization feature.
+     */
     public function addTag($tag_id) {
-        $this->link_tag($tag_id);
+        $this->link_tag($tag_id); // Delegate the linking operation to the `link_tag` method.
     }
 
-    // Ensure tag existence and get its ID
-    // Ensure a tag exists and return its ID
+
+    /**
+     * This static method ensures the existence of a tag in the database, either by finding an existing tag with the given name or creating a new one. It then returns the ID of the tag, whether newly created or pre-existing. This functionality is crucial for maintaining a consistent and non-redundant set of tags within the application, facilitating organized and efficient tag management.
+     *
+     * Explanation:
+     * - The method simplifies the process of associating tags with photos by ensuring that any given tag name is represented by a single, unique record in the database.
+     * - It employs a check-and-act approach: first, it searches for an existing tag by name; if not found, it proceeds to create a new tag.
+     * - This approach prevents duplicate tags, ensuring that each tag name is unique within the database.
+     *
+     * Process:
+     * 1. Attempts to find an existing tag by the given name using `Tag::find_by_tag_name`, which searches the database for a tag matching the specified name.
+     * 2. If the tag does not exist (indicated by `find_by_tag_name` returning null), a new `Tag` object is instantiated and assigned the provided tag name.
+     * 3. The new tag's name is sanitized using `escape_string` to prevent SQL injection, and the tag is saved to the database.
+     * 4. If the tag is successfully saved, its database-generated ID is returned. If the save operation fails, an error is logged, and null is returned to indicate failure.
+     * 5. If an existing tag is found, its ID is returned, bypassing the need to create a duplicate tag.
+     *
+     * Importance:
+     * - By ensuring that each tag name corresponds to a single database record, this method plays a vital role in maintaining data integrity and preventing tag duplication.
+     * - It facilitates the tagging process, allowing tags to be easily and reliably associated with photos without manual verification of tag existence or uniqueness.
+     *
+     * Usage:
+     * This method is called whenever a tag needs to be associated with a photo, especially in scenarios where the tag's prior existence in the database is uncertain.
+     *
+     * Example:
+     * ```php
+     * $tagName = "Landscape"; // The name of the tag to ensure exists
+     * $tagId = Tag::ensureTag($tagName); // This will either find the existing "Landscape" tag or create a new one and return its ID
+     * if ($tagId) {
+     *     // Proceed to link the tag with a photo or handle the tag as needed
+     * } else {
+     *     // Handle the error scenario where the tag could not be ensured
+     * }
+     * ```
+     *
+     * Note:
+     * - This method abstracts away the complexities of tag management, providing a straightforward interface for ensuring tag existence and obtaining tag IDs.
+     */
     public static function ensureTag($tagName) {
         global $database;
         $tag = Tag::find_by_tag_name($tagName);
@@ -551,7 +621,41 @@ class Photo extends Db_object {
     }
 
 
-    // Synchronize tags based on input from the edit form
+    /**
+     * This method synchronizes the tags associated with a photo based on user input, typically from an edit form. It ensures that the photo is linked to all and only the tags specified in the input, adding new links as necessary and removing outdated ones. This process involves comparing the current set of tags linked to the photo with the set of tags provided by the user, then updating the photo's tags to reflect the user's input accurately.
+     *
+     * Explanation:
+     * - It begins by converting the input string of tags into an array, separating the tags based on commas and trimming any whitespace from each tag name.
+     * - The method then retrieves the current set of tags associated with the photo from the database.
+     * - By comparing the current tags with the input tags, it identifies which tags need to be added to or removed from the photo.
+     * - New tags are added to the photo by ensuring their existence in the database (creating them if necessary) and then linking them to the photo.
+     * - Tags no longer included in the input are unlinked from the photo, effectively removing the association.
+     *
+     * Process:
+     * 1. Parse the input string of tags into an array of individual, trimmed tag names.
+     * 2. Fetch the list of tags currently associated with the photo.
+     * 3. Identify the differences between the current tags and the input tags to determine which tags need to be added or removed.
+     * 4. For each tag to be added, ensure its existence in the database and link it to the photo.
+     * 5. For each tag to be removed, unlink it from the photo.
+     *
+     * Importance:
+     * - This method plays a crucial role in maintaining accurate and up-to-date associations between photos and tags, reflecting changes made by users through the UI.
+     * - It ensures the flexibility of tag management, allowing tags to be dynamically added or removed from photos based on user interaction.
+     *
+     * Usage:
+     * This method is typically called when processing user input from a photo edit form where tags can be added or removed.
+     *
+     * Example:
+     * ```php
+     * $photo = Photo::find_by_id($photoId); // Assume $photoId is the ID of the photo being edited
+     * $inputTags = "Nature, Landscape, Sunset"; // Example user input from a form field
+     * $photo->syncTags($inputTags); // Synchronize the photo's tags based on the input
+     * ```
+     *
+     * Note:
+     * - This method assumes that the inputTags string is a comma-separated list of tag names.
+     * - It handles both the creation of new tags (if they don't already exist) and the cleaning up of associations that are no longer relevant.
+     */
     public function syncTags($inputTags) {
         global $database;
 
@@ -580,14 +684,46 @@ class Photo extends Db_object {
         }
     }
 
-    // Remove a tag from this photo
+    /**
+     * This method is responsible for removing the association between a photo and a specific tag in the database. It effectively unlinks a tag from a photo by deleting the corresponding record from the `photo_tags` table, which maintains the many-to-many relationship between photos and tags.
+     *
+     * Explanation:
+     * - The `photo_tags` table contains records that link photos to tags using their respective IDs. Each record represents a tagging relationship.
+     * - By deleting a record from this table, the method removes the association, effectively "untagging" the photo with the specified tag.
+     * - This operation is crucial for maintaining accurate tag associations, especially when tags need to be removed from photos, either as part of user-driven edits or during automated processes.
+     *
+     * Process:
+     * 1. Prepare an SQL DELETE statement targeting the `photo_tags` table, specifying conditions to match both the photo ID and the tag ID.
+     * 2. Execute the query with the current photo's ID and the tag ID to be removed as parameters, ensuring that only the relationship between this specific photo and tag is affected.
+     * 3. The deletion operation does not return a result set but affects the database by removing the specified record.
+     *
+     * Importance:
+     * - Allows for dynamic management of photo-tag relationships, ensuring that photos can be accurately tagged or untagged based on user actions or other criteria.
+     * - Supports the integrity of tagging data by ensuring that only relevant tags are associated with each photo.
+     *
+     * Usage:
+     * This method is typically called in the context of editing a photo's tags, where a user or process determines that a tag no longer applies to the photo.
+     *
+     * Example:
+     * ```php
+     * $photo = Photo::find_by_id($photoId); // Assume $photoId is the ID of the photo being edited
+     * $tagIdToRemove = 5; // Example tag ID that needs to be removed from the photo
+     * $photo->removeTag($tagIdToRemove); // Removes the association between the photo and the tag with ID 5
+     * ```
+     *
+     * Note:
+     * - This method is private and intended to be used internally by the Photo class, typically as part of methods that manage a photo's overall tag associations.
+     * - Care should be taken to ensure the tag ID provided actually corresponds to a tag associated with the photo to avoid unnecessary database operations.
+     */
     private function removeTag($tagId) {
         global $database;
         $sql = "DELETE FROM photo_tags WHERE photo_id = ? AND tag_id = ?";
         $database->query($sql, [$this->id, $tagId]);
     }
 
+
     /*METHODS DEALING WITH CATEGORIES*/
+    /*SPECIFIC FOR WHEN ADDING A NEW IMAGE WITH TAGS*/
     /**
      * This protected method is tasked with associating a photo with its respective categories within the database.
      * It ensures a seamless linkage between a photo and one or multiple categories, facilitating categorization
@@ -811,13 +947,82 @@ class Photo extends Db_object {
         return $object_array; // Return the array of Photo objects associated with the specified category.
     }
 
-    // Public wrapper method for linking a category
+    /*CATEGORY - SPECIFIC FOR THE UPDATE OF A CATEGORY WHEN EDITING EXISTING PHOTO*/
+
+    /**
+     * Facilitates the association of a specific category with the current photo by invoking the `link_category` method.
+     * This method acts as a convenient interface for adding a category to a photo, abstracting the direct database operation.
+     *
+     * Explanation:
+     * - In a photo management system, categorizing photos is essential for organization and retrieval. This method provides a straightforward way to associate a photo with a category.
+     * - It uses the `link_category` method, which handles the database interaction required to create a link between the photo and the category.
+     * - By offering this functionality through a public method, it allows other parts of the application to easily categorize photos without dealing with the underlying database logic.
+     *
+     * Process:
+     * 1. Accepts a category ID as its single parameter. This ID should correspond to a category already existing in the database.
+     * 2. Delegates the task of linking the photo to the category to the `link_category` method by passing along the category ID.
+     *
+     * Importance:
+     * - Enhances code usability and readability by providing a clear method for adding categories to photos.
+     * - Encapsulates the logic of category association within the `link_category` method, simplifying maintenance and potential modifications to the association logic.
+     *
+     * Usage:
+     * Use this method when there is a need to programmatically assign a category to a photo, such as during photo upload or editing processes.
+     *
+     * Example:
+     * ```php
+     * $photo = new Photo(); // Assume this is an initialized and saved Photo object.
+     * $categoryId = 5; // Example category ID to link to the photo.
+     * $photo->addCategory($categoryId); // Associates the photo with the category ID 5.
+     * ```
+     *
+     * Note:
+     * - The method assumes the category ID is valid and corresponds to an existing category in the database. It does not perform any validation on the category ID itself.
+     * - This abstraction allows for ease of use and flexibility in photo categorization, which can be particularly beneficial in interfaces allowing users to select categories for their photos.
+     */
     public function addCategory($category_id) {
-        $this->link_category($category_id);
+        $this->link_category($category_id); // Delegate the linking operation to the `link_category` method.
     }
 
-    // Ensure category existence and get its ID
-    // Ensure a category exists and return its ID
+
+    /**
+     * This method ensures the existence of a category within the database by its name. If the category does not exist, it is created, and its ID is returned. If it already exists, its existing ID is returned. This functionality is crucial for maintaining the integrity and uniqueness of categories in a photo management or content management system.
+     *
+     * Explanation:
+     * - Categories are a fundamental part of organizing content, allowing for efficient retrieval and categorization of photos or other entities. This method supports the dynamic handling of categories by checking for their existence before insertion, preventing duplicate entries.
+     * - If a category name provided does not match any existing category, a new category is created with that name, ensuring that all categories used within the application are recorded in the database.
+     * - The method uses parameterized queries for database interactions, enhancing security by preventing SQL injection attacks.
+     *
+     * Process:
+     * 1. Check if a category with the provided name exists in the database.
+     * 2. If the category does not exist, a new Category object is created, and its name is set to the provided name. The category name is sanitized to prevent SQL injection.
+     * 3. The new category is saved to the database. If the save operation is successful, the method returns the new category's ID, indicating the category's successful insertion.
+     * 4. If the category already exists, the method simply returns the ID of the existing category, avoiding duplicate entries.
+     *
+     * Importance:
+     * - Prevents duplication of category names in the database, ensuring data integrity.
+     * - Facilitates the dynamic creation and utilization of categories within the application, enhancing user experience and administrative capabilities.
+     *
+     * Usage:
+     * This method is particularly useful in scenarios where categories are created or assigned dynamically, such as during the upload process of new content or when categorizing existing content.
+     *
+     * Example:
+     * ```php
+     * $categoryName = "Nature"; // The name of the category to ensure exists in the database.
+     * $categoryId = Category::ensureCategory($categoryName);
+     * if ($categoryId) {
+     *     // The category either existed or has been created successfully.
+     *     echo "Category ID: " . $categoryId;
+     * } else {
+     *     // Failed to ensure the category exists.
+     *     echo "Failed to create or find the category.";
+     * }
+     * ```
+     *
+     * Note:
+     * - This method abstracts away the complexity of handling category creation and retrieval, allowing developers to ensure the use of valid categories without direct database manipulation.
+     * - It's essential to handle the possibility of null returns, indicating a failure in creating a new category, which could be due to database errors or constraints.
+     */
     public static function ensureCategory($categoryName) {
         global $database;
         $category = Category::find_by_category_name($categoryName);
@@ -837,6 +1042,39 @@ class Photo extends Db_object {
     }
 
 
+    /**
+     * Synchronizes the categories associated with a photo based on a given list of category names. This method ensures that only the specified categories are linked to the photo, adding new links where necessary and removing any associations that are no longer applicable.
+     *
+     * Explanation:
+     * - In content management systems, it's common to categorize content (like photos) for better organization and retrieval. This method facilitates dynamic management of such categorizations, reflecting changes in the photo's categories directly in the database.
+     * - It first identifies which categories need to be added or removed based on the current state in the database versus the input provided by the user or application.
+     * - The method ensures that all specified categories exist in the database, creating any that are missing, and then updates the photo's category associations accordingly.
+     *
+     * Process:
+     * 1. The input category names are split into an array and sanitized to ensure accurate processing.
+     * 2. The method retrieves the photo's current categories from the database for comparison.
+     * 3. It then calculates which categories need to be added or removed to synchronize the photo's categories with the provided list.
+     * 4. New categories are added by ensuring their existence in the database and then linking them to the photo. Unselected categories are removed from the photo's associations.
+     *
+     * Importance:
+     * - Allows for flexible and dynamic categorization of photos, adapting as the categorization needs change over time.
+     * - Enhances the integrity of the database by ensuring that category associations accurately reflect the current state intended by the user or application.
+     *
+     * Usage:
+     * This method is particularly useful in administrative interfaces or scripts where photos are being re-categorized, either in bulk or individually.
+     *
+     * Example:
+     * ```php
+     * $photo = Photo::find_by_id(1); // Assuming the photo exists
+     * $newCategories = "Nature,Landscape,Wildlife"; // A comma-separated list of new categories for the photo
+     * $photo->syncCategories($newCategories); // Synchronize the photo's categories with the new list
+     * ```
+     *
+     * Note:
+     * - The method assumes that the input is a comma-separated string of category names, which is a common format for category input in web forms.
+     * - Care should be taken to ensure that category names do not contain commas unless intended as separators.
+     * - This method provides a comprehensive approach to managing photo categorization, combining the creation of new categories, the linking of existing ones, and the cleanup of outdated associations.
+     */
     public function syncCategories($inputCategories) {
         global $database;
 
@@ -865,12 +1103,45 @@ class Photo extends Db_object {
         }
     }
 
-    // Method to remove a category from this photo
+
+    /**
+     * A private method designed to dissociate a specific category from a photo by removing the linkage record in the database. This method is integral to maintaining the accuracy of photo categorizations, ensuring that a photo's associated categories reflect current categorization intents.
+     *
+     * Explanation:
+     * - In content management systems, photos can be associated with multiple categories. This method facilitates the dynamic management of such associations by allowing for the removal of specific category linkages.
+     * - It directly interacts with the database to remove the association between the photo and a given category, effectively "uncategorizing" the photo from that category.
+     * - This method is particularly useful in scenarios where categories need to be updated or corrected for a given photo.
+     *
+     * Process:
+     * 1. The method takes a category ID as its parameter, identifying the category to be removed from the photo's associations.
+     * 2. An SQL DELETE query is constructed to remove the specific record linking the photo to the category in the `photo_categories` table.
+     * 3. The query is executed against the database, and the linkage is removed, dissociating the photo from the specified category.
+     *
+     * Importance:
+     * - Allows for the precise management of photo categorizations, supporting operations like category updates and corrections.
+     * - Enhances data integrity by ensuring that photo-category associations in the database accurately reflect the desired state.
+     *
+     * Usage:
+     * This method is typically called as part of larger operations that manage a photo's categories, such as during category synchronization or when manually editing a photo's categories.
+     *
+     * Example:
+     * Assuming a scenario where a photo is mistakenly categorized and needs correction:
+     * ```php
+     * $photo = Photo::find_by_id(1); // Assume the photo exists
+     * $wrongCategoryId = 5; // The ID of the category to be removed from the photo
+     * $photo->removeCategory($wrongCategoryId); // Remove the wrong category association
+     * ```
+     *
+     * Note:
+     * - This method operates based on the assumption that category IDs are valid and correspond to actual categories in the database.
+     * - Being a private method, it's intended for internal use within the class, typically called by public methods handling higher-level category synchronization or management tasks.
+     */
     private function removeCategory($categoryId) {
         global $database;
         $sql = "DELETE FROM photo_categories WHERE photo_id = ? AND category_id = ?";
         $database->query($sql, [$this->id, $categoryId]);
     }
+
 
 
     /*OTHER METHODS*/

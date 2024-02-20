@@ -1,12 +1,44 @@
 <?php
+/**
+ * This script serves as the main interface for managing photos within a content management system. It allows users
+ * to view, edit, delete, and recover (revert soft deletes) photos in bulk or individually. The interface categorizes
+ * photos into active and deleted (soft deleted) groups, providing a user-friendly way to manage all photo content.
+ *
+ * Key Features:
+ * - Displays all active photos with options to edit or delete each photo.
+ * - Offers a bulk action feature to edit or delete multiple photos simultaneously.
+ * - Lists soft-deleted photos with options to revert the deletion or permanently delete.
+ * - Uses tabs to separate active and deleted photos for better organization and accessibility.
+ *
+ * Security and Validation:
+ * - Assumes that access control checks are performed to ensure only authorized users can manage photos.
+ * - Employs session messages to provide feedback on the outcomes of photo management actions.
+ * - Protects against Cross-Site Request Forgery (CSRF) by submitting actions through POST requests.
+ *
+ * Workflow:
+ * 1. Fetches all active and soft-deleted photos from the database using `Photo::find_all` and `Photo::find_all_soft_deletes`.
+ * 2. Displays active photos with checkboxes for bulk actions, and individual edit and delete buttons.
+ * 3. Provides a tab for soft-deleted photos, allowing users to select multiple photos for recovery or permanent deletion.
+ * 4. Utilizes JavaScript to handle the submission of bulk actions based on the selected photos and the desired action (edit, delete, revert).
+ *
+ * Implementation Details:
+ * - The interface dynamically generates the content for each photo, including a thumbnail, title, and action buttons.
+ * - Forms are used to encapsulate photo selections and actions, enabling bulk processing through a single submission.
+ * - JavaScript enhances the user experience by allowing immediate action selection without additional navigation.
+ *
+ * Usage Considerations:
+ * - This script is part of the administrative backend of the CMS, where photo management is a critical function.
+ * - It is designed to facilitate efficient management of a potentially large number of photos.
+ *
+ */
+
+
 global $session;
 include("includes/header.php");
 include("includes/sidebar.php");
 ?>
 
 <?php
-/*include("includes/content-top.php");*/
-
 $photos = Photo::find_all();
 $photosoftdeletes = Photo::find_all_soft_deletes();
 
@@ -59,7 +91,6 @@ $photosoftdeletes = Photo::find_all_soft_deletes();
 												<a href="edit_photo.php?id=<?php echo $photo->id; ?>">
 													<i class="bi bi-pencil-square position-absolute" style="top: 5px; right: 40px; cursor: pointer; color:yellow;"></i>
 												</a>
-												<!-- Add Checkbox for each photo -->
 												<div class="position-absolute" style="top: 5px; right: 65px;">
 													<input class="form-check-input" type="checkbox" value="<?php echo $photo->id; ?>" id="photo-<?php echo $photo->id; ?>" name="selected_photos[]">
 													<label class="form-check-label" for="photo-<?php echo $photo->id; ?>"></label>

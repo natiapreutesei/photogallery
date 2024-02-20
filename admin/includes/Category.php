@@ -3,6 +3,7 @@
 class Category extends Db_object {
     public $id;
     public $category_name;
+    protected static $table_name = "categories"; // The name of the database table used by this class
 
     /**
      * Retrieves all categories from the database.

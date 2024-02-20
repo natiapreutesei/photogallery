@@ -89,7 +89,38 @@ class Session{
         return $this->signed_in;
     }
 
-
+    /**
+     * Logs a user into the application by setting session variables and updating the internal state of the session management object.
+     * This method is critical for initiating a user's login session, tying the session to a specific user's ID, and marking the user as signed in.
+     *
+     * Explanation:
+     * - User authentication is a cornerstone of secure web applications, ensuring that only authorized users can access certain functionalities or information.
+     * - This method takes a user object (typically retrieved from the database) as its argument and uses this object to establish a session for the user.
+     * - By setting both a session variable (`$_SESSION['user_id']`) and an internal property (`$this->user_id`), it ensures consistency between the server-side session state and the application's representation of the login state.
+     *
+     * Process:
+     * 1. The method checks if the provided `$user` object is valid. If so, it proceeds to log the user in; otherwise, it does nothing.
+     * 2. It sets the `user_id` property of the session management object and the `$_SESSION['user_id']` session variable to the ID of the user, effectively linking the session to this specific user.
+     * 3. It marks the user as signed in by setting the `signed_in` property to `true`.
+     *
+     * Importance:
+     * - Centralizing the login logic within this method simplifies the process of logging users in, making the code more maintainable and secure.
+     * - By relying on the user's ID as a key session variable, it allows for easy retrieval and validation of the user's session across the application.
+     *
+     * Usage:
+     * This method is called during the login process, typically after validating the user's credentials against the database.
+     *
+     * Example:
+     * ```php
+     * // Assuming $user is a user object with valid credentials
+     * $session->login($user);
+     * // At this point, the user is considered logged in, and their session is active
+     * ```
+     *
+     * Note:
+     * - This method assumes that the `$user` object is valid and does not perform any authentication checks itself. It should be called after the user's credentials have been verified.
+     * - Proper session management practices, including session regeneration and secure session cookie handling, should accompany the use of this method to ensure application security.
+     */
     public function login($user){
         if($user){
             $this->user_id = $_SESSION['user_id'] = $user->id;

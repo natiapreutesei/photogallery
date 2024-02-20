@@ -5,10 +5,6 @@ include("includes/sidebar.php");
 ?>
 
 <?php
-/*include("includes/content-top.php");*/
-
-//$photos = Photo::find_all();
-//$photosoftdeletes = Photo::find_all_soft_deletes();
 if(!$session->is_signed_in()){
     header("Location:login.php");
 }
@@ -30,11 +26,9 @@ if(empty($_GET['id'])){
             }
 
             // Continue with the rest of the update process, such as handling the file upload
-            // Ensure to call $photo->save() after processing tags and categories
             $photo->title = $_POST['title'];
             $photo->description = $_POST['description'];
             $photo->alternate_text = $_POST['alternate_text'];
-            // Add more fields as necessary
 
             // Handle file upload if needed
             if (!empty($_FILES['file']['name'])) {

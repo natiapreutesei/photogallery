@@ -1,4 +1,41 @@
 <?php
+/**
+ * This script processes the batch update of multiple photos within a content management system (CMS). It updates each selected
+ * photo's metadata, including title, description, alternate text, tags, categories, and optionally, the photo file itself. This
+ * script is triggered after the user submits the form for editing multiple photos.
+ *
+ * Workflow:
+ * 1. Checks if the 'update_multiple_photos' form was submitted.
+ * 2. Initializes arrays to track which photo updates succeeded and which failed.
+ * 3. Loops through each submitted photo ID, performing the following actions for each:
+ *    a. Fetches the corresponding photo object from the database.
+ *    b. Updates the photo's metadata with the submitted values, falling back to existing values if no update is provided.
+ *    c. Synchronizes tags and categories based on the submitted information.
+ *    d. Handles file upload if a new photo file is submitted, updating the photo's file property.
+ *    e. Attempts to save all changes to the photo, including metadata and file changes.
+ *    f. Tracks the success or failure of each update attempt.
+ * 4. Provides feedback to the user by redirecting back to the photo management page with a message indicating the outcome of the update operations.
+ *
+ * Key Features:
+ * - Batch processing: Allows for the efficient management of multiple photos at once, reducing repetitive tasks.
+ * - Comprehensive updates: Enables updates to a wide range of photo metadata and the photo file itself.
+ * - User feedback: Informs the user of the outcome of the batch update process through session messages.
+ *
+ * Security and Validation:
+ * - Access control: Assumes a check for user authentication and authorization prior to executing the script.
+ * - Data validation and sanitization: Should be performed on all inputs to prevent SQL injection, XSS, and other security vulnerabilities.
+ * - Error handling: Properly handles the scenario where a photo ID does not correspond to an existing photo.
+ *
+ * Usage Scenario:
+ * This script is intended for use in the administrative backend of a CMS, where users with appropriate permissions can manage photo content.
+ * It is part of a larger workflow that includes selecting photos for batch editing, editing metadata in a form, and submitting changes.
+ *
+ * Note:
+ * - It is crucial that the accompanying form includes appropriate fields for titles, descriptions, alternate texts, tags, categories, and files.
+ * - The script assumes the existence of methods like `Photo::find_by_id`, `syncTags`, `syncCategories`, and `set_file` for handling photo objects.
+ */
+
+
 global $session;
 require_once("includes/init.php");
 

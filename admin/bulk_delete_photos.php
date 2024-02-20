@@ -12,18 +12,15 @@ if (!empty($_POST['selected_photos'])) {
         if ($photo) {
             // If the photo exists, perform a soft delete operation on it.
             // The soft_delete method marks the photo as deleted in the database,
-            // typically by setting a 'deleted_at' timestamp, without actually removing the record.
+            // by setting a 'deleted_at' timestamp, without actually removing the record.
             $photo->soft_delete();
         }
     }
     // After processing all selected photos, set a session message indicating success.
-    // This message can be displayed to the user as feedback.
     $session->message("Selected photos have been successfully deleted.");
 }
 
 // Redirect the user back to the photos management page.
-// This is a common post-operation action to prevent form resubmission on page refresh
-// and to show the updated state of the photos list to the user.
 header("Location: photos.php");
 exit;
 ?>

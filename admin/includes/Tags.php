@@ -3,6 +3,7 @@ class Tag extends Db_object {
     public $id;
     public $tag_name;
 
+    protected static $table_name = "tags"; // The name of the database table used by this class
     public static function find_all_tags() {
         global $database;
         $tags = [];
